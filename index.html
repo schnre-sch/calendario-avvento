@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Il calendario dei pinguini</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root{
+  --notte:#0b1230; --blu:#1a2460; --blu2:#2b3a8c;
+  --oro:#f5c542; --oro2:#ffdf7e; --orobuio:#8a6a12;
+  --verde:#2f8f6a; --rosso:#ff6b7f;
+  --testo:#eef1ff; --tenue:#a9b2dd;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:radial-gradient(ellipse at top,#1d2a6b 0%,var(--notte) 65%) fixed;
+  background-color:var(--notte); color:var(--testo);
+  font-family:Fredoka,system-ui,sans-serif; min-height:100vh; overflow-x:hidden;
+}
+#stelle{position:fixed;inset:0;pointer-events:none;z-index:0}
+.stella{position:absolute;background:#fff;border-radius:50%;animation:brilla 3s infinite ease-in-out}
+@keyframes brilla{0%,100%{opacity:.15}50%{opacity:1}}
+main{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:28px 16px 64px}
+header{text-align:center}
+.per{color:var(--tenue);margin:0;font-size:15px;letter-spacing:.5px}
+h1{font-size:clamp(28px,7vw,44px);margin:6px 0 4px;color:var(--oro);text-shadow:0 3px 0 var(--orobuio);line-height:1.1}
+.sotto{color:var(--tenue);margin:0 0 6px}
+.avviso{background:rgba(245,197,66,.12);border:1px solid rgba(245,197,66,.4);border-radius:12px;padding:12px 14px;margin:14px 0;text-align:center}
+.avviso[hidden]{display:none}
+
+/* Frase segreta */
+.frase-box{margin:18px 0 22px;text-align:center}
+.frase-box small{color:var(--tenue);display:block;margin-bottom:8px}
+.frase{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+.parola{display:flex;gap:4px}
+.lettera{width:24px;height:32px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);display:grid;place-items:center;font-weight:700;font-size:17px;color:var(--oro)}
+.lettera.vista{background:rgba(245,197,66,.16);border-color:var(--oro)}
+.lettera.nuova{animation:pop .6s}
+@keyframes pop{0%{transform:scale(.3)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+@media(max-width:380px){.lettera{width:21px;height:29px;font-size:15px}}
+
+/* Griglia */
+.griglia{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(min-width:560px){.griglia{grid-template-columns:repeat(6,1fr)}}
+.casella{
+  aspect-ratio:1; border:none; border-radius:14px; font:inherit; font-weight:700;
+  font-size:clamp(20px,5vw,28px); cursor:pointer; position:relative; color:#fff;
+  background:linear-gradient(145deg,var(--blu2),var(--blu));
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.12),0 4px 0 #070c24;
+  transition:transform .15s;
+}
+.casella:hover{transform:translateY(-3px)}
+.casella.chiusa{opacity:.45}
+.casella.chiusa::after{content:"🔒";position:absolute;bottom:5px;right:7px;font-size:13px}
+.casella.aperta{
+  background:linear-gradient(145deg,var(--oro),#e0a21b); color:#3a2a00;
+  box-shadow:0 0 0 2px var(--oro2),0 4px 0 var(--orobuio),0 0 18px rgba(245,197,66,.5);
+  animation:pulsa 2s infinite;
+}
+@keyframes pulsa{50%{box-shadow:0 0 0 2px var(--oro2),0 4px 0 var(--orobuio),0 0 32px rgba(245,197,66,.95)}}
+.casella.fatta{background:linear-gradient(145deg,#38a77c,#1d6b4d)}
+.casella.fatta::after{content:"🐧";position:absolute;bottom:3px;right:5px;font-size:15px}
+.casella.finale{grid-column:1/-1;aspect-ratio:auto;height:96px;font-size:clamp(20px,5vw,26px)}
+.casella.finale.aperta{background:linear-gradient(90deg,#e0a21b,var(--oro2),#e0a21b)}
+
+.piede{text-align:center;color:var(--tenue);font-size:13px;margin-top:26px}
+
+/* Finestra indovinello */
+.velo{position:fixed;inset:0;background:rgba(4,7,22,.75);backdrop-filter:blur(4px);z-index:10;display:flex;align-items:center;justify-content:center;padding:16px}
+.velo[hidden]{display:none}
+.finestra{
+  position:relative;width:100%;max-width:440px;max-height:92vh;overflow:auto;
+  background:linear-gradient(160deg,#22307a,#141c4c);border:2px solid rgba(245,197,66,.5);
+  border-radius:20px;padding:24px 20px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:entra .3s ease-out;
+}
+@keyframes entra{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+.chiudi{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--tenue);font-size:22px;cursor:pointer;padding:6px 10px}
+.giorno{color:var(--oro);font-weight:700;letter-spacing:1px;text-transform:uppercase;font-size:14px}
+.domanda{font-size:21px;line-height:1.35;margin:10px 0 18px}
+form{display:flex;gap:8px}
+input{flex:1;min-width:0;font:inherit;font-size:17px;padding:12px 14px;border-radius:12px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;outline:none}
+input:focus{border-color:var(--oro)}
+.btn{font:inherit;font-weight:600;font-size:16px;padding:12px 16px;border-radius:12px;border:none;cursor:pointer;background:var(--oro);color:#3a2a00}
+.btn.secondario{background:rgba(255,255,255,.1);color:var(--testo)}
+.esito{min-height:24px;margin:12px 0 4px;font-weight:600}
+.esito.no{color:var(--rosso)}
+.esito.si{color:#7ff0bf}
+.aiuto-testo{background:rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;color:var(--oro2)}
+.aiuto-testo[hidden]{display:none}
+.trema{animation:trema .4s}
+@keyframes trema{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.risolto{background:rgba(56,167,124,.18);border:1px solid rgba(127,240,191,.4);border-radius:12px;padding:12px 14px;margin-top:6px}
+.risolto b{color:#7ff0bf}
+.risolto .nuova-lettera{display:inline-grid;place-items:center;width:34px;height:42px;margin-left:6px;border-radius:8px;border:2px solid var(--oro);color:var(--oro);font-size:24px;font-weight:700;vertical-align:middle}
+
+/* Avviso breve */
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:#1a2460;padding:10px 16px;border-radius:12px;font-weight:600;z-index:30;box-shadow:0 8px 30px rgba(0,0,0,.4);max-width:calc(100% - 32px);text-align:center}
+.toast[hidden]{display:none}
+
+/* Regalo finale */
+#regalo{position:fixed;inset:0;z-index:20;background:radial-gradient(ellipse at center,#1d2a6b,#060a1d);overflow:auto;padding:24px 16px}
+#regalo[hidden]{display:none}
+.regalo-dentro{max-width:620px;margin:0 auto;text-align:center;min-height:100%;display:flex;flex-direction:column;justify-content:center}
+.pacco{font-size:110px;cursor:pointer;background:none;border:none;animation:saltella 1.2s infinite;line-height:1}
+@keyframes saltella{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-12px) rotate(-6deg)}75%{transform:translateY(-12px) rotate(6deg)}}
+.biglietto{
+  display:flex;margin:22px auto;max-width:560px;text-align:left;border-radius:16px;overflow:hidden;
+  background:linear-gradient(120deg,#fff6d6,#f5c542 55%,#e0a21b);color:#2a1f00;
+  box-shadow:0 0 0 3px var(--oro2),0 20px 60px rgba(245,197,66,.35);animation:arriva 1s ease-out;
+}
+@keyframes arriva{from{transform:translateY(40px) rotate(-4deg) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.b-sx{flex:1;padding:18px 18px 16px;border-right:3px dashed rgba(42,31,0,.35)}
+.b-dx{width:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px}
+.b-tag{display:inline-block;background:#2a1f00;color:var(--oro2);font-family:"Bebas Neue",sans-serif;font-size:20px;letter-spacing:2px;padding:2px 10px;border-radius:6px}
+.b-band{font-family:"Bebas Neue",sans-serif;font-size:clamp(30px,8vw,42px);line-height:.95;margin:10px 0 4px;letter-spacing:1px}
+.b-luogo{font-weight:600;font-size:16px}
+.b-righe{display:flex;flex-wrap:wrap;gap:12px 22px;margin-top:14px}
+.b-righe small{display:block;font-size:11px;opacity:.7;letter-spacing:1px}
+.b-righe b{font-family:"Bebas Neue",sans-serif;font-size:22px;letter-spacing:1px}
+.b-pinguino{font-size:46px}
+.b-codice{font-family:"Bebas Neue",sans-serif;font-size:18px;writing-mode:vertical-rl;letter-spacing:3px;opacity:.75}
+@media(max-width:420px){.b-dx{width:64px}.b-pinguino{font-size:34px}}
+.lettera-finale{font-size:18px;line-height:1.55;max-width:520px;margin:0 auto;white-space:pre-line}
+.firma{color:var(--oro);font-weight:700;margin-top:10px}
+#coriandoli{position:fixed;inset:0;pointer-events:none;z-index:25}
+</style>
+</head>
+<body>
+<div id="stelle"></div>
+<canvas id="coriandoli"></canvas>
+
+<main>
+  <header>
+    <p class="per" id="per"></p>
+    <h1>Il calendario dei pinguini 🐧</h1>
+    <p class="sotto">Un indovinello al giorno… e il 25 una sorpresa 🎁</p>
+  </header>
+
+  <div class="avviso" id="avviso" hidden></div>
+
+  <div class="frase-box">
+    <small>Ogni indovinello risolto ti regala una lettera della parola segreta</small>
+    <div class="frase" id="frase"></div>
+  </div>
+
+  <div class="griglia" id="griglia"></div>
+
+  <p class="piede">Fatto con amore (e un po' di pinguini) ❤️</p>
+</main>
+
+<div class="velo" id="velo" hidden>
+  <div class="finestra" id="finestra" role="dialog" aria-modal="true" aria-labelledby="nGiorno">
+    <button class="chiudi" id="chiudi" aria-label="Chiudi">✕</button>
+    <div class="giorno" id="nGiorno"></div>
+    <p class="domanda" id="domanda"></p>
+    <div id="zonaRisposta">
+      <form id="modulo">
+        <input id="risposta" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Scrivi qui la risposta">
+        <button class="btn" type="submit">Rispondi</button>
+      </form>
+      <p class="esito" id="esito"></p>
+      <button class="btn secondario" id="btnAiuto" type="button">💡 Un aiutino?</button>
+      <p class="aiuto-testo" id="aiuto" hidden></p>
+    </div>
+    <div class="risolto" id="risolto" hidden></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<div id="regalo" hidden>
+  <div class="regalo-dentro" id="regaloDentro"></div>
+</div>
+
+<script>
+/* =========================================================
+   IMPOSTAZIONI (si possono cambiare)
+   ========================================================= */
+const CONFIG = {
+  // Giorno in cui si apre la casella 1. Ogni giorno se ne apre una nuova.
+  // Metti null per aprirle tutte subito (una dopo l'altra).
+  dataInizio: "2026-12-01",
+  perLei: "Amore",
+  dataConcerto: "8 luglio 2027",
+  oraConcerto: "21:00",
+  luogo: "Stadio Olimpico · Roma",
+  settore: "PIT GOLD",
+  messaggioFinale:
+`Hai risolto tutti e 24 gli indovinelli… e questo è il tuo premio!
+
+Io e te, sotto al palco, al concerto dei Pinguini Tattici Nucleari.
+Preparati a cantare fino a perdere la voce.
+
+Buon Natale, ti amo ❤️`,
+  firma: "Il tuo pinguino 🐧"
+};
+
+// Parola segreta: le caselle 1–23 regalano una lettera ciascuna.
+const PAROLE = ["PINGUINI", "TATTICI", "NUCLEARI"];
+// Quale lettera regala ogni casella (in ordine sparso, così non si indovina subito).
+const ORDINE_LETTERE = [5,17,0,12,20,8,3,15,22,10,1,19,6,13,21,9,2,16,11,4,18,7,14];
+
+/* =========================================================
+   I 24 INDOVINELLI
+   risposte: tutte le risposte accettate (maiuscole, accenti e
+   articoli non contano)
+   ========================================================= */
+const INDOVINELLI = [
+  { domanda: "Più sono grande, meno ci vedi. Chi sono?",
+    risposte: ["buio", "oscurita"],
+    aiuto: "Arrivo ogni sera quando spegni la luce.",
+    bravo: "Tranquilla: dove andremo noi di luci ce ne saranno tantissime ✨" },
+  { domanda: "Basta dire il mio nome per rompermi. Chi sono?",
+    risposte: ["silenzio"],
+    aiuto: "Shhh…",
+    bravo: "E fra qualche mese di silenzio non ce ne sarà proprio 🎶" },
+  { domanda: "Ho tanti denti, ma non mordo mai. Chi sono?",
+    risposte: ["pettine", "spazzola"],
+    aiuto: "Mi usi la mattina davanti allo specchio.",
+    bravo: "Pettinati bene: quel giorno dovrai essere bellissima (lo sei già) 💇‍♀️" },
+  { domanda: "Più ne togli, più divento grande. Chi sono?",
+    risposte: ["buca", "buco", "fossa"],
+    aiuto: "Prendi una pala e scava…",
+    bravo: "Indizio: il regalo NON è una pala 😄" },
+  { domanda: "Volo senza ali e piango senza occhi. Chi sono?",
+    risposte: ["nuvola", "nube", "nuvole"],
+    aiuto: "Guarda in alto in una giornata grigia.",
+    bravo: "Speriamo che quel giorno in cielo non ce ne sia nemmeno una ☀️" },
+  { domanda: "Si dà, si prende, si ruba… e si fa con le labbra. Cos'è?",
+    risposte: ["bacio", "baci"],
+    aiuto: "Te ne do tanti 😘",
+    bravo: "Questo lo riscuoti appena mi vedi 💋" },
+  { domanda: "Ho 88 tasti, ma non sono un computer. Chi sono?",
+    risposte: ["pianoforte", "piano", "tastiera"],
+    aiuto: "Mi suona chi fa musica, seduto su uno sgabello.",
+    bravo: "Primo indizio musicale… 🎹" },
+  { domanda: "Ho sei corde, un manico e una cassa… ma non sono un supermercato. Chi sono?",
+    risposte: ["chitarra", "chitarra elettrica", "basso"],
+    aiuto: "Lo strumento dei falò in spiaggia.",
+    bravo: "Eh sì, la musica c'entra eccome 🎸" },
+  { domanda: "Sono un numero: se mi metti sdraiato divento l'infinito. Chi sono?",
+    risposte: ["8", "otto"],
+    aiuto: "Sto tra il 7 e il 9.",
+    bravo: "Segnati questo numero: ti servirà 😉" },
+  { domanda: "Sono il mese che porta il nome di Giulio Cesare. Quale?",
+    risposte: ["luglio"],
+    aiuto: "Arrivo dopo giugno.",
+    bravo: "8… luglio… ti dice niente? 🤔" },
+  { domanda: "Completa il proverbio: «Tutte le strade portano a…»",
+    risposte: ["roma"],
+    aiuto: "È la Capitale!",
+    bravo: "Prepara lo zaino: si va in trasferta 🚆" },
+  { domanda: "A Roma c'è uno stadio che porta il nome dei Giochi con i cinque cerchi. Come si chiama?",
+    risposte: ["olimpico", "stadio olimpico", "olimpico di roma"],
+    aiuto: "Ogni quattro anni ci sono le Olimpiadi…",
+    bravo: "Lì hanno suonato tante rockstar… e presto ci saremo anche noi 🏟️" },
+  { domanda: "Sono il metallo del primo posto, del colore del sole. Chi sono?",
+    risposte: ["oro", "gold"],
+    aiuto: "Medaglia d'…",
+    bravo: "Ricordatelo: oro, in inglese GOLD ✨" },
+  { domanda: "Sono un uccello ma non volo, vesto sempre in frac e adoro il ghiaccio. Chi sono?",
+    risposte: ["pinguino", "pinguini"],
+    aiuto: "Vivo in Antartide 🧊",
+    bravo: "Il pinguino è la mascotte di questo calendario. Coincidenza? 🐧" },
+  { domanda: "Rimetti in ordine queste lettere: O · T · C · R · E · N · O · C",
+    risposte: ["concerto"],
+    aiuto: "Ci vai per sentire la musica dal vivo.",
+    bravo: "Adesso si fa sul serio 🎤" },
+  { domanda: "Una band famosa ha preso il nome da una birra scozzese chiamata «Tactical Nuclear …». Completa (in inglese)!",
+    risposte: ["penguin", "penguins", "pinguino"],
+    aiuto: "È l'animale di qualche giorno fa, in inglese 🐧",
+    bravo: "Esatto! E come si chiama la band? Lo scoprirai con le lettere 😏" },
+  { domanda: "Quella band viene da una città lombarda famosa per la sua Città Alta. Quale?",
+    risposte: ["bergamo"],
+    aiuto: "Non è Milano, ma è lì vicino… e ha l'aeroporto di Orio al Serio.",
+    bravo: "Ciao Bèrghem! 🏔️" },
+  { domanda: "Come si chiama, di nome, il cantante di quella band?",
+    risposte: ["riccardo", "riccardo zanotti", "zanotti", "ricky"],
+    aiuto: "Inizia con la R… di cognome fa Zanotti.",
+    bravo: "Riccardo, preparati: stiamo arrivando 🎙️" },
+  { domanda: "Quanti sono i componenti della band? (scrivi il numero)",
+    risposte: ["6", "sei"],
+    aiuto: "Più di 5, meno di 7 😅",
+    bravo: "Sei musicisti + noi due = festa 🎉" },
+  { domanda: "A Sanremo 2020 sono arrivati terzi con una canzone che ha il nome del batterista dei Beatles. Quale?",
+    risposte: ["ringo starr", "ringo", "ringostar"],
+    aiuto: "Ringo…",
+    bravo: "Il batterista sottovalutato più famoso d'Italia 🥁" },
+  { domanda: "Sanremo 2024: «… bianco». Completa il titolo!",
+    risposte: ["pastello", "pastello bianco"],
+    aiuto: "Si usa per colorare, come una matita.",
+    bravo: "Una delle più belle 🤍" },
+  { domanda: "Completa il titolo della canzone: «Giovani …»",
+    risposte: ["wannabe", "wanna be", "giovani wannabe"],
+    aiuto: "Parola inglese che vuol dire «aspirante»… come la canzone delle Spice Girls.",
+    bravo: "Giovani wannabe… un po' come noi due 😎" },
+  { domanda: "Completa il titolo del loro album del 2019: «Fuori dall'…»",
+    risposte: ["hype", "fuori dall hype"],
+    aiuto: "Parola inglese per «attesa esagerata, entusiasmo alle stelle».",
+    bravo: "E l'hype adesso è altissimo 🚀" },
+  { domanda: "Hai raccolto tutte le 23 lettere! Adesso scrivi il nome segreto che formano.",
+    risposte: ["pinguini tattici nucleari", "ptn", "i pinguini tattici nucleari"],
+    aiuto: "Guarda le lettere in alto: sono tre parole.",
+    bravo: "SÌÌÌ!!! Manca solo l'ultima casella… 🎁" }
+];
+
+/* =========================================================
+   Da qui in giù: il funzionamento
+   ========================================================= */
+const CHIAVE = "calendario-pinguini-v1";
+const parametri = new URLSearchParams(location.search);
+const MODO_PROVA = parametri.has("prova");   // ?prova = ignora le date
+if (parametri.has("reset")) { try { localStorage.removeItem(CHIAVE); } catch (e) {} }
+
+let risolti = carica();
+let giornoAperto = null;
+
+function carica() {
+  try { return JSON.parse(localStorage.getItem(CHIAVE)) || []; } catch (e) { return []; }
+}
+function salva() {
+  try { localStorage.setItem(CHIAVE, JSON.stringify(risolti)); } catch (e) {}
+}
+
+function pulisci(testo) {
+  let t = testo.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+  t = t.replace(/^(il|lo|la|i|gli|le|un|uno|una)\s+/, "").replace(/^l['’]\s*/, "");
+  return t.replace(/[^a-z0-9]/g, "");
+}
+
+function dataDelGiorno(n) {
+  const [a, m, g] = CONFIG.dataInizio.split("-").map(Number);
+  return new Date(a, m - 1, g + n - 1);
+}
+function oggi() { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function arrivato(n) { return !CONFIG.dataInizio || MODO_PROVA || oggi() >= dataDelGiorno(n); }
+function fatto(n) { return risolti.includes(n); }
+function apribile(n) {
+  if (n === 25) return arrivato(25) && INDOVINELLI.every((_, i) => fatto(i + 1));
+  return arrivato(n) && (n === 1 || fatto(n - 1));
+}
+const MESI = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
+function dataBella(d) { return (d.getDate() === 1 ? "1°" : d.getDate()) + " " + MESI[d.getMonth()]; }
+
+/* ---------- Disegno ---------- */
+function disegnaFrase(nuova) {
+  const viste = new Set();
+  risolti.forEach(n => { if (n <= 23) viste.add(ORDINE_LETTERE[n - 1]); });
+  let pos = 0, html = "";
+  PAROLE.forEach(p => {
+    html += '<div class="parola">';
+    for (const ch of p) {
+      const vista = viste.has(pos);
+      html += `<span class="lettera${vista ? " vista" : ""}${pos === nuova ? " nuova" : ""}">${vista ? ch : ""}</span>`;
+      pos++;
+    }
+    html += "</div>";
+  });
+  document.getElementById("frase").innerHTML = html;
+}
+
+function disegnaGriglia() {
+  const g = document.getElementById("griglia");
+  g.innerHTML = "";
+  for (let n = 1; n <= 25; n++) {
+    const b = document.createElement("button");
+    b.className = "casella";
+    if (n === 25) { b.classList.add("finale"); b.textContent = "25 · 🎁 La sorpresa"; }
+    else b.textContent = n;
+    if (n < 25 && fatto(n)) b.classList.add("fatta");
+    else if (apribile(n)) b.classList.add("aperta");
+    else b.classList.add("chiusa");
+    b.setAttribute("aria-label", n === 25 ? "Casella 25, la sorpresa" : "Casella " + n);
+    b.addEventListener("click", () => clicCasella(n));
+    g.appendChild(b);
+  }
+}
+
+function disegnaAvviso() {
+  const a = document.getElementById("avviso");
+  if (CONFIG.dataInizio && !MODO_PROVA && oggi() < dataDelGiorno(1)) {
+    const giorni = Math.round((dataDelGiorno(1) - oggi()) / 86400000);
+    a.textContent = `⏳ Il calendario si apre il ${dataBella(dataDelGiorno(1))}: mancano ${giorni} ${giorni === 1 ? "giorno" : "giorni"}!`;
+    a.hidden = false;
+  } else if (risolti.length === 24 && !apribile(25)) {
+    a.textContent = `🎁 Bravissima! La sorpresa si apre il ${dataBella(dataDelGiorno(25))}.`;
+    a.hidden = false;
+  } else a.hidden = true;
+}
+
+function disegnaTutto(nuova) { disegnaFrase(nuova); disegnaGriglia(); disegnaAvviso(); }
+
+/* ---------- Caselle ---------- */
+function clicCasella(n) {
+  if (n === 25) {
+    if (apribile(25)) return apriRegalo();
+    if (risolti.length < 24) return avvisa("Prima risolvi tutti e 24 gli indovinelli 😉");
+    return avvisa(`La sorpresa si apre il ${dataBella(dataDelGiorno(25))} 🎄`);
+  }
+  if (!fatto(n) && !apribile(n)) {
+    if (!arrivato(n)) return avvisa(`Questa casella si apre il ${dataBella(dataDelGiorno(n))} 🔒`);
+    return avvisa(`Prima risolvi la casella ${n - 1} 😉`);
+  }
+  apriFinestra(n);
+}
+
+function apriFinestra(n) {
+  giornoAperto = n;
+  const q = INDOVINELLI[n - 1];
+  document.getElementById("nGiorno").textContent = "Casella " + n;
+  document.getElementById("domanda").textContent = q.domanda;
+  document.getElementById("esito").textContent = "";
+  document.getElementById("esito").className = "esito";
+  document.getElementById("aiuto").hidden = true;
+  document.getElementById("aiuto").textContent = q.aiuto;
+  document.getElementById("risposta").value = "";
+  mostraStato(n);
+  document.getElementById("velo").hidden = false;
+  if (!fatto(n)) setTimeout(() => document.getElementById("risposta").focus(), 50);
+}
+
+function mostraStato(n) {
+  const q = INDOVINELLI[n - 1];
+  const zona = document.getElementById("zonaRisposta");
+  const ris = document.getElementById("risolto");
+  if (fatto(n)) {
+    zona.hidden = true;
+    let html = `<b>Risposta: ${q.risposte[0].toUpperCase()}</b><br>${q.bravo}`;
+    if (n <= 23) {
+      const pos = ORDINE_LETTERE[n - 1];
+      html += `<br><br>Lettera trovata: <span class="nuova-lettera">${PAROLE.join("")[pos]}</span>`;
+    }
+    ris.innerHTML = html;
+    ris.hidden = false;
+  } else {
+    zona.hidden = false;
+    ris.hidden = true;
+  }
+}
+
+function chiudiFinestra() { document.getElementById("velo").hidden = true; giornoAperto = null; }
+
+document.getElementById("modulo").addEventListener("submit", e => {
+  e.preventDefault();
+  const n = giornoAperto;
+  if (!n) return;
+  const campo = document.getElementById("risposta");
+  const data = pulisci(campo.value);
+  if (!data) return;
+  const esito = document.getElementById("esito");
+  const giuste = INDOVINELLI[n - 1].risposte.map(pulisci);
+  if (giuste.includes(data)) {
+    if (!fatto(n)) { risolti.push(n); salva(); }
+    mostraStato(n);
+    disegnaTutto(n <= 23 ? ORDINE_LETTERE[n - 1] : undefined);
+    coriandoli(60);
+  } else {
+    esito.textContent = ["Mmm… no 🙈", "Quasi! Riprova 💪", "Nope! Prova un aiutino 💡"][Math.floor(Math.random() * 3)];
+    esito.className = "esito no";
+    const f = document.getElementById("finestra");
+    f.classList.remove("trema"); void f.offsetWidth; f.classList.add("trema");
+    campo.select();
+  }
+});
+document.getElementById("btnAiuto").addEventListener("click", () => { document.getElementById("aiuto").hidden = false; });
+document.getElementById("chiudi").addEventListener("click", chiudiFinestra);
+document.getElementById("velo").addEventListener("click", e => { if (e.target.id === "velo") chiudiFinestra(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") chiudiFinestra(); });
+
+let timerToast;
+function avvisa(testo) {
+  const t = document.getElementById("toast");
+  t.textContent = testo; t.hidden = false;
+  clearTimeout(timerToast); timerToast = setTimeout(() => t.hidden = true, 2600);
+}
+
+/* ---------- Regalo finale ---------- */
+function apriRegalo() {
+  const r = document.getElementById("regalo");
+  const d = document.getElementById("regaloDentro");
+  d.innerHTML = `
+    <h1>L'ultima casella 🎁</h1>
+    <p class="sotto">Tocca il pacco per aprirlo</p>
+    <div><button class="pacco" id="pacco" aria-label="Apri il regalo">🎁</button></div>`;
+  r.hidden = false;
+  document.getElementById("pacco").addEventListener("click", mostraBiglietto);
+}
+
+function mostraBiglietto() {
+  const d = document.getElementById("regaloDentro");
+  d.innerHTML = `
+    <h1>Andiamo a vedere i PTN! 🐧🎤</h1>
+    <div class="biglietto">
+      <div class="b-sx">
+        <span class="b-tag">${CONFIG.settore}</span>
+        <div class="b-band">Pinguini<br>Tattici Nucleari</div>
+        <div class="b-luogo">${CONFIG.luogo}</div>
+        <div class="b-righe">
+          <div><small>DATA</small><b>${CONFIG.dataConcerto.toUpperCase()}</b></div>
+          <div><small>ORE</small><b>${CONFIG.oraConcerto}</b></div>
+          <div><small>SETTORE</small><b>${CONFIG.settore}</b></div>
+          <div><small>PER</small><b>${CONFIG.perLei.toUpperCase()}</b></div>
+        </div>
+      </div>
+      <div class="b-dx">
+        <div class="b-pinguino">🐧</div>
+        <div class="b-codice">AMMETTE 1</div>
+      </div>
+    </div>
+    <p class="lettera-finale"></p>
+    <p class="firma"></p>
+    <p><button class="btn secondario" id="torna">Torna al calendario</button></p>`;
+  d.querySelector(".lettera-finale").textContent = CONFIG.messaggioFinale;
+  d.querySelector(".firma").textContent = CONFIG.firma;
+  document.getElementById("torna").addEventListener("click", () => { document.getElementById("regalo").hidden = true; });
+  coriandoli(260);
+  setTimeout(() => coriandoli(200), 900);
+}
+
+/* ---------- Coriandoli ---------- */
+const tela = document.getElementById("coriandoli");
+const ctx = tela.getContext("2d");
+let pezzi = [], animando = false;
+function adatta() { tela.width = innerWidth; tela.height = innerHeight; }
+addEventListener("resize", adatta); adatta();
+function coriandoli(quanti) {
+  const colori = ["#f5c542", "#ffdf7e", "#ff6b7f", "#7ff0bf", "#8fb3ff", "#ffffff"];
+  for (let i = 0; i < quanti; i++) {
+    pezzi.push({ x: Math.random() * tela.width, y: -20 - Math.random() * tela.height * .4,
+      vx: (Math.random() - .5) * 3, vy: 2 + Math.random() * 4, r: Math.random() * Math.PI,
+      vr: (Math.random() - .5) * .3, w: 6 + Math.random() * 6, h: 8 + Math.random() * 8,
+      c: colori[Math.floor(Math.random() * colori.length)] });
+  }
+  if (!animando) { animando = true; requestAnimationFrame(muovi); }
+}
+function muovi() {
+  ctx.clearRect(0, 0, tela.width, tela.height);
+  pezzi.forEach(p => {
+    p.x += p.vx; p.y += p.vy; p.r += p.vr; p.vy += .03;
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+    ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore();
+  });
+  pezzi = pezzi.filter(p => p.y < tela.height + 30);
+  if (pezzi.length) requestAnimationFrame(muovi); else { animando = false; ctx.clearRect(0, 0, tela.width, tela.height); }
+}
+
+/* ---------- Stelle ---------- */
+(function () {
+  const s = document.getElementById("stelle");
+  for (let i = 0; i < 70; i++) {
+    const e = document.createElement("div");
+    const size = Math.random() < .8 ? 2 : 3;
+    e.className = "stella";
+    e.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;width:${size}px;height:${size}px;animation-delay:${Math.random() * 3}s`;
+    s.appendChild(e);
+  }
+})();
+
+document.getElementById("per").textContent = "Per " + CONFIG.perLei + " ❤️";
+disegnaTutto();
+</script>
+</body>
+</html>
