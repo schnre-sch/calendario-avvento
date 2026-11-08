@@ -33,16 +33,14 @@ h1{font-size:clamp(28px,7vw,44px);margin:6px 0 4px;color:var(--oro);text-shadow:
 .avviso{background:rgba(245,197,66,.12);border:1px solid rgba(245,197,66,.4);border-radius:12px;padding:12px 14px;margin:14px 0;text-align:center}
 .avviso[hidden]{display:none}
 
-/* Frase segreta */
-.frase-box{margin:18px 0 22px;text-align:center}
-.frase-box small{color:var(--tenue);display:block;margin-bottom:8px}
-.frase{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
-.parola{display:flex;gap:4px}
-.lettera{width:24px;height:32px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);display:grid;place-items:center;font-weight:700;font-size:17px;color:var(--oro)}
-.lettera.vista{background:rgba(245,197,66,.16);border-color:var(--oro)}
-.lettera.nuova{animation:pop .6s}
-@keyframes pop{0%{transform:scale(.3)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
-@media(max-width:380px){.lettera{width:21px;height:29px;font-size:15px}}
+/* Puzzle */
+.puzzle-box{margin:18px 0 22px;text-align:center}
+.puzzle-box small{color:var(--tenue);display:block;margin-bottom:8px}
+.puzzle-box canvas,.pezzo-vinto canvas{image-rendering:pixelated;image-rendering:crisp-edges}
+#tavola{width:100%;max-width:480px;border-radius:10px;border:2px solid rgba(245,197,66,.45);box-shadow:0 0 24px rgba(245,197,66,.15)}
+.pezzo-vinto{display:flex;align-items:center;gap:12px;margin-top:12px}
+.pezzo-vinto canvas{width:72px;height:72px;border:2px solid var(--oro);border-radius:6px;flex:none}
+.biglietto-puzzle{width:100%;max-width:420px;margin:8px auto 0;display:block;border-radius:10px;border:2px solid var(--oro);image-rendering:pixelated}
 
 /* Griglia */
 .griglia{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
@@ -96,7 +94,6 @@ input:focus{border-color:var(--oro)}
 @keyframes trema{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
 .risolto{background:rgba(56,167,124,.18);border:1px solid rgba(127,240,191,.4);border-radius:12px;padding:12px 14px;margin-top:6px}
 .risolto b{color:#7ff0bf}
-.risolto .nuova-lettera{display:inline-grid;place-items:center;width:34px;height:42px;margin-left:6px;border-radius:8px;border:2px solid var(--oro);color:var(--oro);font-size:24px;font-weight:700;vertical-align:middle}
 
 /* Avviso breve */
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:#1a2460;padding:10px 16px;border-radius:12px;font-weight:600;z-index:30;box-shadow:0 8px 30px rgba(0,0,0,.4);max-width:calc(100% - 32px);text-align:center}
@@ -143,9 +140,9 @@ input:focus{border-color:var(--oro)}
 
   <div class="avviso" id="avviso" hidden></div>
 
-  <div class="frase-box">
-    <small>Ogni indovinello risolto ti regala una lettera della parola segreta</small>
-    <div class="frase" id="frase"></div>
+  <div class="puzzle-box">
+    <small>Ogni indovinello risolto ti regala un pezzo del puzzle 🧩</small>
+    <canvas id="tavola" width="576" height="384" aria-label="Il puzzle"></canvas>
   </div>
 
   <div class="griglia" id="griglia"></div>
@@ -177,6 +174,7 @@ input:focus{border-color:var(--oro)}
   <div class="regalo-dentro" id="regaloDentro"></div>
 </div>
 
+<script src="disegno.js"></script>
 <script>
 /* =========================================================
    IMPOSTAZIONI (si possono cambiare)
@@ -189,21 +187,21 @@ const CONFIG = {
   dataConcerto: "8 luglio 2027",
   oraConcerto: "21:00",
   luogo: "Stadio Olimpico · Roma",
-  settore: "PIT GOLD",
+  settore: "PRATO GOLD",
   messaggioFinale:
 `Hai risolto tutti e 24 gli indovinelli… e questo è il tuo premio!
 
 Io e te, sotto al palco, al concerto dei Pinguini Tattici Nucleari.
 Preparati a cantare fino a perdere la voce.
 
+📩 Ora apri la bustina numero 25!
+
 Buon Natale, ti amo ❤️`,
   firma: "Il tuo pinguino 🐧"
 };
 
-// Parola segreta: le caselle 1–23 regalano una lettera ciascuna.
-const PAROLE = ["PINGUINI", "TATTICI", "NUCLEARI"];
-// Quale lettera regala ogni casella (in ordine sparso, così non si indovina subito).
-const ORDINE_LETTERE = [5,17,0,12,20,8,3,15,22,10,1,19,6,13,21,9,2,16,11,4,18,7,14];
+// Il disegno del puzzle e l'ordine dei pezzi sono nel file disegno.js
+let PIXEL = null;   // si riempie quando puzzle.png è caricato
 
 /* =========================================================
    I 24 INDOVINELLI
@@ -214,15 +212,15 @@ const INDOVINELLI = [
   { domanda: "Più sono grande, meno ci vedi. Chi sono?",
     risposte: ["buio", "oscurita"],
     aiuto: "Arrivo ogni sera quando spegni la luce.",
-    bravo: "Tranquilla: dove andremo noi di luci ce ne saranno tantissime ✨" },
+    bravo: "Primo pezzo conquistato! Si parte alla grande ✨" },
   { domanda: "Basta dire il mio nome per rompermi. Chi sono?",
     risposte: ["silenzio"],
     aiuto: "Shhh…",
-    bravo: "E fra qualche mese di silenzio non ce ne sarà proprio 🎶" },
+    bravo: "Shhh… acqua in bocca sulla sorpresa 🤫" },
   { domanda: "Ho tanti denti, ma non mordo mai. Chi sono?",
     risposte: ["pettine", "spazzola"],
     aiuto: "Mi usi la mattina davanti allo specchio.",
-    bravo: "Pettinati bene: quel giorno dovrai essere bellissima (lo sei già) 💇‍♀️" },
+    bravo: "Bellissima già senza pettine, comunque 💇‍♀️" },
   { domanda: "Più ne togli, più divento grande. Chi sono?",
     risposte: ["buca", "buco", "fossa"],
     aiuto: "Prendi una pala e scava…",
@@ -230,83 +228,83 @@ const INDOVINELLI = [
   { domanda: "Volo senza ali e piango senza occhi. Chi sono?",
     risposte: ["nuvola", "nube", "nuvole"],
     aiuto: "Guarda in alto in una giornata grigia.",
-    bravo: "Speriamo che quel giorno in cielo non ce ne sia nemmeno una ☀️" },
+    bravo: "Con te anche le giornate grigie diventano belle ☀️" },
   { domanda: "Si dà, si prende, si ruba… e si fa con le labbra. Cos'è?",
     risposte: ["bacio", "baci"],
     aiuto: "Te ne do tanti 😘",
     bravo: "Questo lo riscuoti appena mi vedi 💋" },
-  { domanda: "Ho 88 tasti, ma non sono un computer. Chi sono?",
-    risposte: ["pianoforte", "piano", "tastiera"],
-    aiuto: "Mi suona chi fa musica, seduto su uno sgabello.",
-    bravo: "Primo indizio musicale… 🎹" },
-  { domanda: "Ho sei corde, un manico e una cassa… ma non sono un supermercato. Chi sono?",
-    risposte: ["chitarra", "chitarra elettrica", "basso"],
-    aiuto: "Lo strumento dei falò in spiaggia.",
-    bravo: "Eh sì, la musica c'entra eccome 🎸" },
-  { domanda: "Sono un numero: se mi metti sdraiato divento l'infinito. Chi sono?",
-    risposte: ["8", "otto"],
-    aiuto: "Sto tra il 7 e il 9.",
-    bravo: "Segnati questo numero: ti servirà 😉" },
-  { domanda: "Sono il mese che porta il nome di Giulio Cesare. Quale?",
-    risposte: ["luglio"],
-    aiuto: "Arrivo dopo giugno.",
-    bravo: "8… luglio… ti dice niente? 🤔" },
-  { domanda: "Completa il proverbio: «Tutte le strade portano a…»",
-    risposte: ["roma"],
-    aiuto: "È la Capitale!",
-    bravo: "Prepara lo zaino: si va in trasferta 🚆" },
-  { domanda: "A Roma c'è uno stadio che porta il nome dei Giochi con i cinque cerchi. Come si chiama?",
-    risposte: ["olimpico", "stadio olimpico", "olimpico di roma"],
-    aiuto: "Ogni quattro anni ci sono le Olimpiadi…",
-    bravo: "Lì hanno suonato tante rockstar… e presto ci saremo anche noi 🏟️" },
-  { domanda: "Sono il metallo del primo posto, del colore del sole. Chi sono?",
-    risposte: ["oro", "gold"],
-    aiuto: "Medaglia d'…",
-    bravo: "Ricordatelo: oro, in inglese GOLD ✨" },
-  { domanda: "Sono un uccello ma non volo, vesto sempre in frac e adoro il ghiaccio. Chi sono?",
-    risposte: ["pinguino", "pinguini"],
-    aiuto: "Vivo in Antartide 🧊",
-    bravo: "Il pinguino è la mascotte di questo calendario. Coincidenza? 🐧" },
-  { domanda: "Rimetti in ordine queste lettere: O · T · C · R · E · N · O · C",
-    risposte: ["concerto"],
-    aiuto: "Ci vai per sentire la musica dal vivo.",
-    bravo: "Adesso si fa sul serio 🎤" },
-  { domanda: "Una band famosa ha preso il nome da una birra scozzese chiamata «Tactical Nuclear …». Completa (in inglese)!",
-    risposte: ["penguin", "penguins", "pinguino"],
-    aiuto: "È l'animale di qualche giorno fa, in inglese 🐧",
-    bravo: "Esatto! E come si chiama la band? Lo scoprirai con le lettere 😏" },
-  { domanda: "Quella band viene da una città lombarda famosa per la sua Città Alta. Quale?",
-    risposte: ["bergamo"],
-    aiuto: "Non è Milano, ma è lì vicino… e ha l'aeroporto di Orio al Serio.",
-    bravo: "Ciao Bèrghem! 🏔️" },
-  { domanda: "Come si chiama, di nome, il cantante di quella band?",
-    risposte: ["riccardo", "riccardo zanotti", "zanotti", "ricky"],
-    aiuto: "Inizia con la R… di cognome fa Zanotti.",
-    bravo: "Riccardo, preparati: stiamo arrivando 🎙️" },
-  { domanda: "Quanti sono i componenti della band? (scrivi il numero)",
-    risposte: ["6", "sei"],
-    aiuto: "Più di 5, meno di 7 😅",
-    bravo: "Sei musicisti + noi due = festa 🎉" },
-  { domanda: "A Sanremo 2020 sono arrivati terzi con una canzone che ha il nome del batterista dei Beatles. Quale?",
-    risposte: ["ringo starr", "ringo", "ringostar"],
-    aiuto: "Ringo…",
-    bravo: "Il batterista sottovalutato più famoso d'Italia 🥁" },
-  { domanda: "Sanremo 2024: «… bianco». Completa il titolo!",
-    risposte: ["pastello", "pastello bianco"],
-    aiuto: "Si usa per colorare, come una matita.",
-    bravo: "Una delle più belle 🤍" },
-  { domanda: "Completa il titolo della canzone: «Giovani …»",
-    risposte: ["wannabe", "wanna be", "giovani wannabe"],
-    aiuto: "Parola inglese che vuol dire «aspirante»… come la canzone delle Spice Girls.",
-    bravo: "Giovani wannabe… un po' come noi due 😎" },
-  { domanda: "Completa il titolo del loro album del 2019: «Fuori dall'…»",
-    risposte: ["hype", "fuori dall hype"],
-    aiuto: "Parola inglese per «attesa esagerata, entusiasmo alle stelle».",
-    bravo: "E l'hype adesso è altissimo 🚀" },
-  { domanda: "Hai raccolto tutte le 23 lettere! Adesso scrivi il nome segreto che formano.",
-    risposte: ["pinguini tattici nucleari", "ptn", "i pinguini tattici nucleari"],
-    aiuto: "Guarda le lettere in alto: sono tre parole.",
-    bravo: "SÌÌÌ!!! Manca solo l'ultima casella… 🎁" }
+  { domanda: "Ho un occhio solo, ma non ci vedo. Chi sono?",
+    risposte: ["ago", "l ago"],
+    aiuto: "Mi usa chi cuce, insieme al filo.",
+    bravo: "Cucita su misura per me: sei tu 🧵" },
+  { domanda: "Ho quattro gambe, ma non cammino mai. Chi sono?",
+    risposte: ["tavolo", "tavola", "sedia", "letto"],
+    aiuto: "Ci appoggi il piatto quando mangi.",
+    bravo: "Ci sediamo insieme a festeggiare? 🍝" },
+  { domanda: "Più asciugo, più mi bagno. Chi sono?",
+    risposte: ["asciugamano", "asciugamani", "telo"],
+    aiuto: "Mi usi dopo la doccia.",
+    bravo: "Avvolta nell'asciugamano sei comunque la più bella 🛁" },
+  { domanda: "Ho il collo ma non la testa, ho la pancia ma non le gambe. Chi sono?",
+    risposte: ["bottiglia", "bottiglie"],
+    aiuto: "Dentro di me ci può essere acqua… o vino 🍷",
+    bravo: "Un brindisi a te: siamo già a 10! 🥂" },
+  { domanda: "Ho città ma non case, fiumi ma non acqua, montagne ma non sassi. Chi sono?",
+    risposte: ["mappa", "cartina", "carta geografica", "atlante"],
+    aiuto: "Mi apri quando non sai dove andare.",
+    bravo: "Dove andiamo? Questo è ancora un segreto 🗺️" },
+  { domanda: "Vado su e giù ma resto sempre ferma. Chi sono?",
+    risposte: ["scala", "scale"],
+    aiuto: "Ci sali per andare al piano di sopra.",
+    bravo: "Un gradino alla volta verso la sorpresa 🪜" },
+  { domanda: "Arrivo una volta in un minuto, due volte in un momento e mai in cent'anni. Chi sono?",
+    risposte: ["m", "lettera m", "emme", "la lettera m"],
+    aiuto: "Non è una cosa: guarda bene come sono scritte le parole.",
+    bravo: "Mmm… che brava che sei! 🧠" },
+  { domanda: "Ti seguo sempre, ma non mi puoi toccare. Col sole ci sono, al buio sparisco. Chi sono?",
+    risposte: ["ombra", "la tua ombra", "mia ombra"],
+    aiuto: "Guarda per terra in una giornata di sole.",
+    bravo: "Io ti seguo come un'ombra, lo sai 🫶" },
+  { domanda: "Ho le lancette ma non pungo, cammino ma non ho i piedi. Chi sono?",
+    risposte: ["orologio", "orologi", "sveglia"],
+    aiuto: "Mi guardi per sapere che ore sono.",
+    bravo: "Il conto alla rovescia è iniziato ⏰" },
+  { domanda: "Mi apri quando piove e mi chiudi quando esce il sole. Chi sono?",
+    risposte: ["ombrello", "ombrelli"],
+    aiuto: "Senza di me ti bagni tutta ☔",
+    bravo: "Sotto l'ombrello ci stiamo in due ☔❤️" },
+  { domanda: "Più sono caldo, più sono fresco. Chi sono?",
+    risposte: ["pane"],
+    aiuto: "Lo compri dal fornaio la mattina.",
+    bravo: "Buono come il pane… come te 🥖" },
+  { domanda: "Sono verde fuori, rossa dentro e piena di semini neri. Chi sono?",
+    risposte: ["anguria", "cocomero"],
+    aiuto: "La mangi d'estate quando fa caldo 🍉",
+    bravo: "Che voglia d'estate, eh? 🍉" },
+  { domanda: "Ho le pagine ma non sono un giornale, ho il dorso ma non sono un animale. Chi sono?",
+    risposte: ["libro", "libri", "quaderno", "diario"],
+    aiuto: "Mi leggi prima di dormire.",
+    bravo: "La nostra storia è il mio libro preferito 📖" },
+  { domanda: "Ci mangi sopra ogni giorno, ma non mi mangi mai. Chi sono?",
+    risposte: ["piatto", "piatti", "tovaglia"],
+    aiuto: "Mi lavi dopo pranzo 🍽️",
+    bravo: "Stasera i piatti li lavo io, promesso 😇" },
+  { domanda: "Si fa senza mani, si mantiene senza braccia, e se non la rispetti si rompe. Cos'è?",
+    risposte: ["promessa", "promesse"],
+    aiuto: "Si dice: «Te lo…»",
+    bravo: "Le mie con te le mantengo tutte ❤️" },
+  { domanda: "Più ne dai, più ne hai. Cos'è?",
+    risposte: ["amore", "sorriso", "affetto", "felicita"],
+    aiuto: "È quello che provo per te ❤️",
+    bravo: "E io per te ne ho tantissimo 💕" },
+  { domanda: "Uno mi ha, due mi dividono, tre mi rompono. Chi sono?",
+    risposte: ["segreto", "segreti"],
+    aiuto: "Se lo racconti a tutti non lo è più 🤫",
+    bravo: "Il segreto lo scopri presto… resisti! 🎁" },
+  { domanda: "Ultimo indovinello! C'è una persona che amo più di tutte al mondo. Chi è?",
+    risposte: ["tu", "te", "io", "me", "amore", "la tua fidanzata", "fidanzata", "la tua ragazza"],
+    aiuto: "Guardati allo specchio 😘",
+    bravo: "Esatto: TU ❤️ Il puzzle è completo… manca solo l'ultima casella 🎁" }
 ];
 
 /* =========================================================
@@ -348,20 +346,39 @@ const MESI = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","
 function dataBella(d) { return (d.getDate() === 1 ? "1°" : d.getDate()) + " " + MESI[d.getMonth()]; }
 
 /* ---------- Disegno ---------- */
-function disegnaFrase(nuova) {
-  const viste = new Set();
-  risolti.forEach(n => { if (n <= 23) viste.add(ORDINE_LETTERE[n - 1]); });
-  let pos = 0, html = "";
-  PAROLE.forEach(p => {
-    html += '<div class="parola">';
-    for (const ch of p) {
-      const vista = viste.has(pos);
-      html += `<span class="lettera${vista ? " vista" : ""}${pos === nuova ? " nuova" : ""}">${vista ? ch : ""}</span>`;
-      pos++;
+function disegnaPuzzle(nuovo) {
+  const tela = document.getElementById("tavola");
+  const lato = 96;
+  tela.width = PUZZLE.colonne * lato; tela.height = PUZZLE.righe * lato;
+  tela.style.maxWidth = PUZZLE.colonne >= PUZZLE.righe ? "480px" : "320px";
+  const c = tela.getContext("2d");
+  const visti = new Set(risolti.map(n => ORDINE_PEZZI[n - 1]));
+  for (let p = 0; p < 24; p++) {
+    const x = (p % PUZZLE.colonne) * lato, y = Math.floor(p / PUZZLE.colonne) * lato;
+    if (visti.has(p) && PIXEL) dipingiPezzo(c, PIXEL, p, x, y, lato);
+    else {
+      c.fillStyle = (p + Math.floor(p / PUZZLE.colonne)) % 2 ? "#141c4c" : "#18225a";
+      c.fillRect(x, y, lato, lato);
+      c.fillStyle = "rgba(255,255,255,.18)";
+      c.font = "bold 40px Fredoka, sans-serif";
+      c.textAlign = "center"; c.textBaseline = "middle";
+      c.fillText("?", x + lato / 2, y + lato / 2 + 2);
     }
-    html += "</div>";
-  });
-  document.getElementById("frase").innerHTML = html;
+    c.strokeStyle = "rgba(0,0,0,.45)"; c.lineWidth = 2;
+    c.strokeRect(x + 1, y + 1, lato - 2, lato - 2);
+  }
+  if (nuovo !== undefined) {
+    const x = (nuovo % PUZZLE.colonne) * lato, y = Math.floor(nuovo / PUZZLE.colonne) * lato;
+    c.strokeStyle = "#f5c542"; c.lineWidth = 6;
+    c.strokeRect(x + 3, y + 3, lato - 6, lato - 6);
+  }
+}
+
+function telaPezzo(pezzo, lato) {
+  const t = document.createElement("canvas");
+  t.width = t.height = lato;
+  dipingiPezzo(t.getContext("2d"), PIXEL, pezzo, 0, 0, lato);
+  return t;
 }
 
 function disegnaGriglia() {
@@ -393,7 +410,7 @@ function disegnaAvviso() {
   } else a.hidden = true;
 }
 
-function disegnaTutto(nuova) { disegnaFrase(nuova); disegnaGriglia(); disegnaAvviso(); }
+function disegnaTutto(nuovo) { disegnaPuzzle(nuovo); disegnaGriglia(); disegnaAvviso(); }
 
 /* ---------- Caselle ---------- */
 function clicCasella(n) {
@@ -430,12 +447,9 @@ function mostraStato(n) {
   const ris = document.getElementById("risolto");
   if (fatto(n)) {
     zona.hidden = true;
-    let html = `<b>Risposta: ${q.risposte[0].toUpperCase()}</b><br>${q.bravo}`;
-    if (n <= 23) {
-      const pos = ORDINE_LETTERE[n - 1];
-      html += `<br><br>Lettera trovata: <span class="nuova-lettera">${PAROLE.join("")[pos]}</span>`;
-    }
-    ris.innerHTML = html;
+    ris.innerHTML = `<b>Risposta: ${q.risposte[0].toUpperCase()}</b><br>${q.bravo}
+      <div class="pezzo-vinto"><span>📩 Hai vinto un pezzo del puzzle!<br>Ora apri la <b>bustina numero ${n}</b>.</span></div>`;
+    if (PIXEL) ris.querySelector(".pezzo-vinto").prepend(telaPezzo(ORDINE_PEZZI[n - 1], 72));
     ris.hidden = false;
   } else {
     zona.hidden = false;
@@ -457,7 +471,7 @@ document.getElementById("modulo").addEventListener("submit", e => {
   if (giuste.includes(data)) {
     if (!fatto(n)) { risolti.push(n); salva(); }
     mostraStato(n);
-    disegnaTutto(n <= 23 ? ORDINE_LETTERE[n - 1] : undefined);
+    disegnaTutto(ORDINE_PEZZI[n - 1]);
     coriandoli(60);
   } else {
     esito.textContent = ["Mmm… no 🙈", "Quasi! Riprova 💪", "Nope! Prova un aiutino 💡"][Math.floor(Math.random() * 3)];
@@ -515,6 +529,11 @@ function mostraBiglietto() {
     <p class="lettera-finale"></p>
     <p class="firma"></p>
     <p><button class="btn secondario" id="torna">Torna al calendario</button></p>`;
+  const intero = document.createElement("canvas");
+  intero.width = PUZZLE.colonne * 96; intero.height = PUZZLE.righe * 96; intero.className = "biglietto-puzzle";
+  intero.style.maxWidth = PUZZLE.colonne >= PUZZLE.righe ? "420px" : "280px";
+  if (PIXEL) dipingiTutto(intero.getContext("2d"), PIXEL, 96);
+  d.querySelector(".biglietto").after(intero);
   d.querySelector(".lettera-finale").textContent = CONFIG.messaggioFinale;
   d.querySelector(".firma").textContent = CONFIG.firma;
   document.getElementById("torna").addEventListener("click", () => { document.getElementById("regalo").hidden = true; });
@@ -563,6 +582,7 @@ function muovi() {
 
 document.getElementById("per").textContent = "Per " + CONFIG.perLei + " ❤️";
 disegnaTutto();
+caricaPuzzle("puzzle.png").then(px => { PIXEL = px; disegnaTutto(); }).catch(() => {});
 </script>
 </body>
 </html>
