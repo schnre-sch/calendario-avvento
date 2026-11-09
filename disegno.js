@@ -1,5 +1,5 @@
 /* =========================================================
-   IL PUZZLE: la foto del biglietto, già pixelata, nel file
+   IL PUZZLE: un'immagine segreta, già pixelata, nel file
    puzzle.png. Ogni pezzo è un quadrato di "lato" pixel; i pezzi
    sono 24 (6x4 se la foto è orizzontale, 4x6 se è verticale).
    Lo usano sia il sito sia la pagina da stampare.
