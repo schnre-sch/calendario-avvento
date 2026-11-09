@@ -40,7 +40,7 @@ h1{font-size:clamp(28px,7vw,44px);margin:6px 0 4px;color:var(--oro);text-shadow:
 #tavola{width:100%;max-width:480px;border-radius:10px;border:2px solid rgba(245,197,66,.45);box-shadow:0 0 24px rgba(245,197,66,.15)}
 .pezzo-vinto{display:flex;align-items:center;gap:12px;margin-top:12px}
 .pezzo-vinto canvas{width:72px;height:72px;border:2px solid var(--oro);border-radius:6px;flex:none}
-.puzzle-finale{width:100%;max-width:420px;margin:8px auto 0;display:block;border-radius:10px;border:2px solid var(--oro);image-rendering:pixelated}
+.biglietto-puzzle{width:100%;max-width:420px;margin:8px auto 0;display:block;border-radius:10px;border:2px solid var(--oro);image-rendering:pixelated}
 
 /* Griglia */
 .griglia{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
@@ -105,7 +105,7 @@ input:focus{border-color:var(--oro)}
 .regalo-dentro{max-width:620px;margin:0 auto;text-align:center;min-height:100%;display:flex;flex-direction:column;justify-content:center}
 .pacco{font-size:110px;cursor:pointer;background:none;border:none;animation:saltella 1.2s infinite;line-height:1}
 @keyframes saltella{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-12px) rotate(-6deg)}75%{transform:translateY(-12px) rotate(6deg)}}
-.premio{
+.biglietto{
   display:flex;margin:22px auto;max-width:560px;text-align:left;border-radius:16px;overflow:hidden;
   background:linear-gradient(120deg,#fff6d6,#f5c542 55%,#e0a21b);color:#2a1f00;
   box-shadow:0 0 0 3px var(--oro2),0 20px 60px rgba(245,197,66,.35);animation:arriva 1s ease-out;
@@ -114,7 +114,7 @@ input:focus{border-color:var(--oro)}
 .b-sx{flex:1;padding:18px 18px 16px;border-right:3px dashed rgba(42,31,0,.35)}
 .b-dx{width:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px}
 .b-tag{display:inline-block;background:#2a1f00;color:var(--oro2);font-family:"Bebas Neue",sans-serif;font-size:20px;letter-spacing:2px;padding:2px 10px;border-radius:6px}
-.b-nome{font-family:"Bebas Neue",sans-serif;font-size:clamp(30px,8vw,42px);line-height:.95;margin:10px 0 4px;letter-spacing:1px}
+.b-band{font-family:"Bebas Neue",sans-serif;font-size:clamp(30px,8vw,42px);line-height:.95;margin:10px 0 4px;letter-spacing:1px}
 .b-luogo{font-weight:600;font-size:16px}
 .b-righe{display:flex;flex-wrap:wrap;gap:12px 22px;margin-top:14px}
 .b-righe small{display:block;font-size:11px;opacity:.7;letter-spacing:1px}
@@ -183,13 +183,22 @@ const CONFIG = {
   // Giorno in cui si apre la casella 1. Ogni giorno se ne apre una nuova.
   // Metti null per aprirle tutte subito (una dopo l'altra).
   dataInizio: "2026-12-01",
-  perLei: "Amore"
-};
+  perLei: "Amore",
+  dataConcerto: "8 luglio 2027",
+  oraConcerto: "21:00",
+  luogo: "Stadio Olimpico · Roma",
+  settore: "PRATO GOLD",
+  messaggioFinale:
+`Hai risolto tutti e 24 gli indovinelli… e questo è il tuo premio!
 
-// La sorpresa finale è cifrata: si legge solo con le
-// 24 risposte giuste. Si modifica in calendario-stampa\sorpresa.html e si
-// rigenera con calendario-stampa\cifra.ps1.
-const SORPRESA = "QlVJT08BXVsvFA0GEQgbVAhOEwcRBhMLVR9PPDUsQEOZ8PHAn+vv0lNDB1BNaUlVR0FRBQcZQgwYFRoUUUsRHwQdGQ5RXWtMQU1PTUJOBQYETw8DBhocUk8AXxYUTlF6QU5FQU5HVVJVEhwIDFIMHAgSB0lNEl8bDAJRTTEzLDs9RTQqKzZZWxwEFAxLY09TSUxFTlpJUxQMAlQKAgQRBl5DDFgYAAEEQF8zAAEGEgYaCEoNHlE1EhcdHAQITS8bDA4KFQYAW0MNCBtfelBBU0NBTEFNUwkLBEEMHg4fHFpLDUIBFx0CA05RIxUPAQgBRzoeAAwcAAEdT7LeQSYbAhFOQAkMBU1rQU1PUkVTRUdOAR0ZVBYOFBocTksOSBwTDgcVR0p+SU5FQlVDQU5VVlMICBRfXxoCAAsDSiU3Oy1TTgAOCBkLX1EDUFdCIyEzJS4jSVNdU0dMThFdXUMFBBlTaFJBT1JPTE9HSU9TCQsEW1AfAhENAlsuPCJJXRoMDQUOTFMSV1NFTl9ATkAPW09cBQgbUXhFU0VHUkVUT1RVXhEAGU1VHwgPFgVRIyAgICY8IF5aEAwPGRpRUANcMTEoOy5HKDstMlNDDV9PTA0cEV9nQU5PQk9UVElHTFUFBBdOTBIeAg0AXz0qP15dEgITAwBRWwtRLiAtICBQQw1OXUEBCBhZf1JJQUxJQlJPTEYFHQJRelJPTUVTU11OCQYEW3lFR1JFVE9IEQsDSQwfCB8WU1gLQhQdVkpjTkVCVUNBTlVKCwUXQgIPCBwSWk0WTAYGAggUGg0GV1mR8vHJU00LHQJXbUxJQU1BUFBBTwcIGkEOAwwRAVxNEEIPAAMADApPXDMoISk7JCROVF1BAxwEV2tMSUJST1BVThAdGU54T01FU09OBQQZTG9TRUdSWQRPFxkDBhpSUQUJERofGw5dAx0aCAIAQEsrAAdVBAYfDg4VDEkbFBMbHUETT15bQRQPAFUODwkOGAYMChgYAIXsz0EIQQEFBAAXDkyixU8EDlIVGh1PHB0CBAYATGh4LANMClAVC0lBHQgBBgZBDQVCAg4cCg5YVA4cUgwCCxAWExUCTxYAGkU3GwsTGh0bC1U9DgcdBQYHWicaEwkRFRsHS2glEQQeFAQOGAhCAEMKDg8TDgYEVgkFAQ5TAkkFAhMJBBwKQgMVVB8IDwxPZ2uA7/LaQy4eAE0OHRAbQQMTTw4aFB0GAQxCHBABCR0fQVxQQGRtNwcGD0wnAwYOHAxNVAAGUBMCAkWR7sWO1eBOSgNbbVJFVE9IBUIWBQ4AGlFHCBMbAhFHSj0FThEXGkMRBxsRGgUPDUGT9v/GW0AEX3w=";
+Io e te, sotto al palco, al concerto dei Pinguini Tattici Nucleari.
+Preparati a cantare fino a perdere la voce.
+
+📩 Ora apri la bustina numero 25!
+
+Buon Natale, ti amo ❤️`,
+  firma: "Il tuo pinguino 🐧"
+};
 
 // Il disegno del puzzle e l'ordine dei pezzi sono nel file disegno.js
 let PIXEL = null;   // si riempie quando puzzle.png è caricato
@@ -493,24 +502,40 @@ function apriRegalo() {
     <p class="sotto">Tocca il pacco per aprirlo</p>
     <div><button class="pacco" id="pacco" aria-label="Apri il regalo">🎁</button></div>`;
   r.hidden = false;
-  document.getElementById("pacco").addEventListener("click", mostraPremio);
+  document.getElementById("pacco").addEventListener("click", mostraBiglietto);
 }
 
-function svela(testo) {
-  const chiave = new TextEncoder().encode(INDOVINELLI.map(q => pulisci(q.risposte[0])).join(""));
-  const b = Uint8Array.from(atob(testo), c => c.charCodeAt(0));
-  return new TextDecoder().decode(b.map((x, i) => x ^ chiave[i % chiave.length]));
-}
-
-function mostraPremio() {
+function mostraBiglietto() {
   const d = document.getElementById("regaloDentro");
-  d.innerHTML = svela(SORPRESA) +
-    `<p><button class="btn secondario" id="torna">Torna al calendario</button></p>`;
+  d.innerHTML = `
+    <h1>Andiamo a vedere i PTN! 🐧🎤</h1>
+    <div class="biglietto">
+      <div class="b-sx">
+        <span class="b-tag">${CONFIG.settore}</span>
+        <div class="b-band">Pinguini<br>Tattici Nucleari</div>
+        <div class="b-luogo">${CONFIG.luogo}</div>
+        <div class="b-righe">
+          <div><small>DATA</small><b>${CONFIG.dataConcerto.toUpperCase()}</b></div>
+          <div><small>ORE</small><b>${CONFIG.oraConcerto}</b></div>
+          <div><small>SETTORE</small><b>${CONFIG.settore}</b></div>
+          <div><small>PER</small><b>${CONFIG.perLei.toUpperCase()}</b></div>
+        </div>
+      </div>
+      <div class="b-dx">
+        <div class="b-pinguino">🐧</div>
+        <div class="b-codice">AMMETTE 1</div>
+      </div>
+    </div>
+    <p class="lettera-finale"></p>
+    <p class="firma"></p>
+    <p><button class="btn secondario" id="torna">Torna al calendario</button></p>`;
   const intero = document.createElement("canvas");
-  intero.width = PUZZLE.colonne * 96; intero.height = PUZZLE.righe * 96; intero.className = "puzzle-finale";
+  intero.width = PUZZLE.colonne * 96; intero.height = PUZZLE.righe * 96; intero.className = "biglietto-puzzle";
   intero.style.maxWidth = PUZZLE.colonne >= PUZZLE.righe ? "420px" : "280px";
   if (PIXEL) dipingiTutto(intero.getContext("2d"), PIXEL, 96);
-  (d.querySelector(".premio") || d.firstElementChild).after(intero);
+  d.querySelector(".biglietto").after(intero);
+  d.querySelector(".lettera-finale").textContent = CONFIG.messaggioFinale;
+  d.querySelector(".firma").textContent = CONFIG.firma;
   document.getElementById("torna").addEventListener("click", () => { document.getElementById("regalo").hidden = true; });
   coriandoli(260);
   setTimeout(() => coriandoli(200), 900);
