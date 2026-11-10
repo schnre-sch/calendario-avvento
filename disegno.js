@@ -52,3 +52,31 @@ function dipingiTutto(ctx, px, lato) {
   for (let p = 0; p < 24; p++)
     dipingiPezzo(ctx, px, p, (p % PUZZLE.colonne) * lato, Math.floor(p / PUZZLE.colonne) * lato, lato);
 }
+
+// I messaggini dei bigliettini (uno per casella). Li usano il sito e la pagina da stampare.
+const FRASI = [
+  "Il primo pezzo di qualcosa di bello. Come il primo giorno con te.",
+  "Ogni giorno con te è un regalo. Questo è solo un pezzetto.",
+  "Tienilo bene: senza questo pezzo il puzzle non torna. Come me senza di te.",
+  "Indizio: non è un maglione.",
+  "Sei la mia canzone preferita.",
+  "Un bacio per ogni pezzo. Questo vale doppio.",
+  "Più ne raccogli, più si capisce… forse 😏",
+  "Mi fai ridere anche quando ho la luna storta.",
+  "Shhh… siamo solo a un terzo.",
+  "Con te anche il lunedì sembra venerdì.",
+  "Prova a unire i pezzi che hai: capisci qualcosa?",
+  "Metà strada! Sei bravissima.",
+  "Sei la parte migliore delle mie giornate.",
+  "Questo pezzo l'ho scelto pensando al tuo sorriso.",
+  "Ancora nove e scopri tutto.",
+  "Se fossi un puzzle, tu saresti il pezzo che mi mancava.",
+  "Ti amo anche quando mi rubi le coperte.",
+  "Ogni indovinello risolto è un passo verso la sorpresa.",
+  "Sei la mia persona preferita al mondo.",
+  "Mancano pochi pezzi… resisti!",
+  "Grazie di esserci, sempre.",
+  "Quasi finito… hai già un'idea?",
+  "Penultimo pezzo: il cuore batte forte?",
+  "L'ultimo pezzo. Domani la sorpresa ❤️"
+];
