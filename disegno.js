@@ -80,3 +80,6 @@ const FRASI = [
   "Penultimo pezzo: il cuore batte forte?",
   "L'ultimo pezzo. Domani la sorpresa ❤️"
 ];
+
+// La frase stampata dietro a tutti i pezzi del puzzle.
+const RETRO_PEZZI = "Pezzo dopo pezzo,<br>sempre noi";

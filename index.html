@@ -63,7 +63,7 @@ h1{font-size:clamp(28px,7vw,44px);margin:6px 0 4px;color:var(--oro);text-shadow:
 }
 @keyframes pulsa{50%{box-shadow:0 0 0 2px var(--oro2),0 4px 0 var(--orobuio),0 0 32px rgba(245,197,66,.95)}}
 .casella.fatta{background:linear-gradient(145deg,#38a77c,#1d6b4d)}
-.casella.fatta::after{content:"🐧";position:absolute;bottom:3px;right:5px;font-size:15px}
+.casella.fatta::after{content:"❤️";position:absolute;bottom:3px;right:5px;font-size:15px}
 .casella.finale{grid-column:1/-1;aspect-ratio:auto;height:96px;font-size:clamp(20px,5vw,26px)}
 .casella.finale.aperta{background:linear-gradient(90deg,#e0a21b,var(--oro2),#e0a21b)}
 
@@ -120,9 +120,9 @@ input:focus{border-color:var(--oro)}
 .b-righe{display:flex;flex-wrap:wrap;gap:12px 22px;margin-top:14px}
 .b-righe small{display:block;font-size:11px;opacity:.7;letter-spacing:1px}
 .b-righe b{font-family:"Bebas Neue",sans-serif;font-size:22px;letter-spacing:1px}
-.b-pinguino{font-size:46px}
+.b-icona{font-size:46px}
 .b-codice{font-family:"Bebas Neue",sans-serif;font-size:18px;writing-mode:vertical-rl;letter-spacing:3px;opacity:.75}
-@media(max-width:420px){.b-dx{width:64px}.b-pinguino{font-size:34px}}
+@media(max-width:420px){.b-dx{width:64px}.b-icona{font-size:34px}}
 .lettera-finale{font-size:18px;line-height:1.55;max-width:520px;margin:0 auto;white-space:pre-line}
 .firma{color:var(--oro);font-weight:700;margin-top:10px}
 #coriandoli{position:fixed;inset:0;pointer-events:none;z-index:25}
@@ -135,7 +135,7 @@ input:focus{border-color:var(--oro)}
 <main>
   <header>
     <p class="per" id="per"></p>
-    <h1>Il calendario dei pipini 🐧</h1>
+    <h1>Il calendario dei pipini ✨</h1>
     <p class="sotto">Un indovinello al giorno… e il 25 una sorpresa 🎁</p>
   </header>
 
@@ -148,7 +148,7 @@ input:focus{border-color:var(--oro)}
 
   <div class="griglia" id="griglia"></div>
 
-  <p class="piede">Fatto con amore (e un po' di pinguini) ❤️</p>
+  <p class="piede">Fatto con tutto il mio amore ❤️</p>
 </main>
 
 <div class="velo" id="velo" hidden>
@@ -198,7 +198,7 @@ Preparati a cantare fino a perdere la voce.
 📩 Ora apri la bustina numero 25!
 
 Buon Natale, ti amo ❤️`,
-  firma: "Il tuo pinguino 🐧"
+  firma: "Con tutto il mio amore ❤️"
 };
 
 // Il disegno del puzzle e l'ordine dei pezzi sono nel file disegno.js
@@ -311,7 +311,7 @@ const INDOVINELLI = [
 /* =========================================================
    Da qui in giù: il funzionamento
    ========================================================= */
-const CHIAVE = "calendario-pinguini-v1";
+const CHIAVE = "calendario-avvento-v1";
 const parametri = new URLSearchParams(location.search);
 const MODO_PROVA = parametri.has("prova");   // ?prova = ignora le date
 if (parametri.has("reset")) { try { localStorage.removeItem(CHIAVE); } catch (e) {} }
@@ -510,7 +510,7 @@ function apriRegalo() {
 function mostraBiglietto() {
   const d = document.getElementById("regaloDentro");
   d.innerHTML = `
-    <h1>Andiamo a vedere i PTN! 🐧🎤</h1>
+    <h1>Andiamo a vedere i PTN! 🎤🎉</h1>
     <div class="biglietto">
       <div class="b-sx">
         <span class="b-tag">${CONFIG.settore}</span>
@@ -524,7 +524,7 @@ function mostraBiglietto() {
         </div>
       </div>
       <div class="b-dx">
-        <div class="b-pinguino">🐧</div>
+        <div class="b-icona">🎤</div>
         <div class="b-codice">AMMETTE 1</div>
       </div>
     </div>
