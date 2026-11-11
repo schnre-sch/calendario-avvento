@@ -39,6 +39,7 @@ h1{font-size:clamp(28px,7vw,44px);margin:6px 0 4px;color:var(--oro);text-shadow:
 .puzzle-box canvas,.pezzo-vinto canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 #tavola{width:100%;max-width:480px;border-radius:10px;border:2px solid rgba(245,197,66,.45);box-shadow:0 0 24px rgba(245,197,66,.15)}
 .pezzo-vinto{display:flex;align-items:center;gap:12px;margin-top:12px}
+.frase-pezzo{color:var(--oro2)}
 .messaggino{margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.08);color:var(--oro2);line-height:1.4}
 .pezzo-vinto canvas{width:72px;height:72px;border:2px solid var(--oro);border-radius:6px;flex:none}
 .biglietto-puzzle{width:100%;max-width:420px;margin:8px auto 0;display:block;border-radius:10px;border:2px solid var(--oro);image-rendering:pixelated}
@@ -450,7 +451,7 @@ function mostraStato(n) {
     zona.hidden = true;
     ris.innerHTML = `<b>Risposta: ${q.risposte[0].toUpperCase()}</b><br>${q.bravo}
       <div class="messaggino">💌 <i>${FRASI[n - 1]}</i></div>
-      <div class="pezzo-vinto"><span>📩 Hai vinto un pezzo del puzzle!<br>Ora apri la <b>bustina numero ${n}</b>.</span></div>`;
+      <div class="pezzo-vinto"><span>📩 Hai vinto un pezzo del puzzle!<br><i class="frase-pezzo">«${FRASI_PEZZI[n - 1]}» ❤️</i><br>Ora apri la <b>bustina numero ${n}</b>.</span></div>`;
     if (PIXEL) ris.querySelector(".pezzo-vinto").prepend(telaPezzo(ORDINE_PEZZI[n - 1], 72));
     ris.hidden = false;
   } else {

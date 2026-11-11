@@ -83,3 +83,31 @@ const FRASI = [
 
 // La frase stampata dietro a tutti i pezzi del puzzle.
 const RETRO_PEZZI = "Pezzo dopo pezzo,<br>sempre noi";
+
+// Le frasi dei pezzi: compaiono sul sito accanto al pezzo vinto (una per casella).
+const FRASI_PEZZI = [
+  "Pezzo dopo pezzo, sempre noi",
+  "Giorno dopo giorno, mano nella mano",
+  "Un pezzetto di me, tutto per te",
+  "Piano piano, insieme si arriva",
+  "Ogni giorno un po' di più",
+  "Tu ed io, il pezzo che mancava",
+  "Passo dopo passo, verso di te",
+  "Un sorriso alla volta, sempre tuo",
+  "Poco a poco, tutto per noi",
+  "Un indizio alla volta, un bacio ogni volta",
+  "Pezzo per pezzo, cuore a cuore",
+  "A metà strada, ma già felici",
+  "Combaciamo, come questi pezzi",
+  "Ogni pezzo un ricordo, ogni ricordo noi",
+  "Più pezzi, più noi",
+  "Uno più uno fa noi",
+  "Vicini vicini, come due pezzi",
+  "Incastrati alla perfezione, io e te",
+  "Un giorno in più, un pezzo di noi",
+  "Quasi completo, come me con te",
+  "Un pezzo alla volta, per sempre",
+  "Manca poco, ma ci sei già tu",
+  "Penultimo pezzo, primo pensiero: tu",
+  "L'ultimo pezzo, il primo di tanti"
+];
